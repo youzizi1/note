@@ -352,6 +352,8 @@ module.exports = {
 }
 ```
 
+其中，`babel-loader`是`webpack`和`babel`的通信桥梁，但是不会执行`ES6`编译工作，这部分由`@babel/preset-env`来实现。
+
 但是上面配置并不会转义一些实例上的方法以及全局变量，例如`'aa'.includes('a')`以及`Promise`全局对象，此时你就需要使用`@babel/polyfill`。
 
 我们可以在入口文件中直接引入`@babel/polyfill`，但是很多情况下，我们只想将用到的语法编译，而不是所有的语法，因此需要如下配置：
@@ -1362,7 +1364,24 @@ module.exports = MyPlugin
 
 ### 内部原理
 
-#### 实现webpack
+#### 打包原理
+
+```js
+(function(modules) {
+  function require(moduleId) {
+    modules[moduleId]();
+  }
+  require("./index.js");
+})({
+  "./index.js": function(module, exports) {
+    eval("console.log('hello world')\n\n//# sourceURL=webpack:///./index.js?");
+  }
+});
+```
+
+当然里面还有缓存，模块标识`id`等等。
+
+#### 实现bundle
 
 ```js
 const fs = require("fs");
