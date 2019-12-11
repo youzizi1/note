@@ -7,6 +7,24 @@
 * 第三方模块，例如json-server
 * postman
 
+## 验证码
+
+### 图形验证码
+
+通过`trek-captcha`第三方模块来实现图形验证码。
+
+### 滑动验证码
+
+主要实现原理：
+
+* 服务端随机生成验证图片，并保留抠图位置坐标
+* 客户端实现滑动交互，获取用户滑动距离值
+* 将滑动值传入服务端进行校验，是否在允许范围内
+
+## 定时任务
+
+通过`node-schedule`来实现定时任务。
+
 ## 加密
 
 `crypto`模块提供了加密和哈希算法。
@@ -177,10 +195,11 @@ app.post("/api/login", (req, res) => {
 });
 
 app.listen(3000);
-
 ```
 
 注意：客户端进行登录时要使用`encodeURIComponent`对中文进行编码。另外，对客户端密码加密可以使用`cryto-js`库。
+
+> 登出就是服务端删除用户对应的`session`信息。
 
 ### JWT
 
@@ -191,6 +210,8 @@ token = jwt.sign({name: 'ugu'}, 'secret')	// 签名
 
 jwt.verify(token, 'secret')					// 验证
 ```
+
+> 登出就是客户端删除令牌即可。
 
 ### oAuth2
 

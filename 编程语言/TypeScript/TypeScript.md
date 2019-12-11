@@ -1,79 +1,79 @@
-## 简介
+## 编程语言
 
-TypeScript是由微软开发并开源的编程语言，是JavaScript的超集。它拓展了JavaScript的语法，添加了可选的静态类型和基于类的面向对象编程。
+按照强弱类型可以将编程语言分为：
 
-### 优点
+* 强类型：不允许改变变量的数据类型，除非进行强制类型转换
 
-相较于JavaScript，它有如下优点：
+* 弱类型：变量可以被赋予不同的数据类型
 
-* 类型限制，让代码易于维护和调试
-* 对模块，命名空间和面向对象的支持，更容易组织代码开发大型复杂程序
+按照静态类型可以将编程语言分为：
 
-- 可以在编译阶段捕获运行之前的错误
+* 静态语言：在编译阶段确定所有变量的类型
+* 动态语言：在执行阶段确定所有变量的类型
 
-### 设计目标
+而相较于`JavaScript`这种动态弱类型语言，`TypeScript`具有如下优点：
 
-* 在编译阶段排查一些类型错误
-* 与现存的JavaScript代码互相兼容
-* 对于生成阶段的代码，没有运行时开发
-* 遵循未来的ES规范
+* 类型约束，让代码易于维护和调试
+* 模块，命名空间和面向对象的全面支持，更容易组织代码开发复杂程序
+* 在编译阶段检查类型错误
 
-* 成为跨平台的开发语言
+虽然它是一门新的语言，但是它可以：
 
-### 搭建开发环境
+* 与现存`JavaScript`代码兼容
+* 生成`JavaScript`代码，没有运行时开销
+* 遵循未来的`ES`规范
 
-```bash
-npm i -g typescript
-```
+## 命令行工具
 
-这样就可以通过全局`tsc`命令来编译`.ts`文件了。
+首先通过`npm i -g typescript`全局安装`typescript`，然后就可以通过`tsc --watch`来监听`.ts`文件变化，实现自动编译。
 
-有的时候，我更需要监听`.ts`文件发生变化，自动进行编译。
-
-```bash
-tsc index.ts --watch
-```
-
-当然你可以配合webpack来使用，此时就需要使用`ts-loader`来处理`.ts`文件。
-
-### 配置文件
-
-通过`tsc --init`可以生成TypeScript配置文件`tsconfig.json`。该文件的具体使用规则如下：
-
-* 如果直接运行`tsc`，此时编译器会从目录开始搜索该配置文件
-* 如果直接运行`tsc -p folder`，folder目录下必须存在该配置文件
-* 如果直接运行`tsc index.ts`，编译器将忽略该配置文件
-
-注意：局部安装的`typescript`，可以使用`npx tsc --init`来生成配置文件。
-
-### 命令行工具
-
-```bash
-tsc -v				# 查看版本
-tsc *.ts			# 编译所有ts文件
-tsc a.ts b.ts		# 编译多个ts文件
-tsc main.ts --watch # 监听编译
-tsc --init 			# 生成tsconfig.json
-```
-
-更多命令如下：
+除了`--watch`参数，`tsc`还有如下参数：
 
 * `--watch`或`-w`：监听编译
 * `--version`或`-v`：查看编译器的版本
-* `--target=""`：指定编译的ES版本，默认是ES3
+* `--target=""`：指定编译的`ES`版本，默认是`ES3`
 * `--strict`：启用所有严格类型检查
 * `--sourceMap`：生成对应的`.map`文件
 * `--outFile`：输出到单个文件
 * `--outDir`：输出到目录
 * `--module`或`-m`：指定使用哪种模块标准来输出代码
-* `--lib`：要包含在编译中的库文件列表，比如Promise
-* `--jsx`：在`.tsx`中支持JSX
+* `--lib`：要包含在编译中的库文件列表，比如`Promise`
+* `--jsx`：在`.tsx`中支持`JSX`
 
-### 代码提示
+* `tsc *.ts`：编译所有`ts`文件
+* `tsc a.ts b.ts`：同时编译多个`ts`文件
 
-编译的时候加上`-d`选项，你会发现多生成一个`.d.ts`文件。该文件中记录了原来的`.ts`文件文中所有的声明，而TypeScript正是通过该文件进行代码提示的。
+> 注意：通过`tsc`命令直接编译`ts`文件会默认生成`ES3`代码，而通过配置文件编译`ts`文件会默认生成`ES5`代码。
 
-注意：自己的写的TS文件可以通过`-d`选项来生成，而对于第三方库，需要去安装对应的声明文件包。如果没有，你就需要自己写了。
+## 配置文件
+
+通过`npx tsc --init`可以生成`TypeScript`配置文件`tsconfig.json`，该文件的使用规则如下：
+
+* 如果直接运行`tsc`，此时编译器会从目录开始搜索该配置文件
+* 如果直接运行`tsc -p folder`，folder目录下必须存在该配置文件
+* 如果直接运行`tsc index.ts`，编译器将忽略该配置文件
+
+## 声明文件
+
+编译`ts`文件加上`-d`选项，用于生成声明文件，该文件记录了原来`ts`文件中所有声明。
+
+> 编辑器是通过声明文件来进行代码提示的。
+
+对于第三方库，你需要安装对应的声明文件包。如果没有对应的声明文件包，你就需要手动编写声明文件。
+
+## 类型注解
+
+`ts`中的类型注解是一种轻量级的为函数或变量添加约束的方式。
+
+```typescript
+const sayMsg = (msg: string) => console.log(msg)
+
+sayMsg(1)
+```
+
+这样在`tsc`执行编译的时候会报错。
+
+> 注意：尽管会报错，但是还是会生成`JavaScript`文件，只是用来提示你的代码可能不会按照预期执行。
 
 ## 基础类型
 
@@ -128,15 +128,21 @@ let a: string = '123'
 
 * tuple（元组类型）
 
+  元组是一种特殊的数组，它限定了元素的个数和数据类型。
+
   ```typescript
   let x: [string, number] = ['hi', 1]		// 类型要对应一致
   let y: [string, number]					// 单独赋值
   y[0] = 'hi'
   y[1] = 12
-  x.push(true)					// 报错，添加越界元素时，类型会被限制为元组中每个类型的联合类型
+  
+  x.push(true)					// 不会报错
+  x[2]							// 报错，虽然允许超出个数限制，但是不建议这样做，因为获取的时候就会报错
   ```
 
 * any（任意类型）
+
+  如果在变量声明中不指定任何类型，那么就是any类型。当然你也可以手动声明any类型。
 
   ```typescript
   let a: any = 1
@@ -159,22 +165,17 @@ let a: string = '123'
   let a: void = null	// 声明一个void的类型没有意义，因为你只能赋值成undefind或null
   ```
 
-* undefined
+* undefined和null
 
   ```typescript
-  let a:number;
-  console.log(a)			// undefined
+  const a: undefined = undefined		// 声明为undefined的变量无法赋值其它类型，只能是其自身
+  const a: null = null		// null，只能是其自身
   ```
 
-* null
+  默认情况下，`null`和`undefined`是其它类型的子类型，可以赋值给其它类型。但是如果你开启了`strictNullChecks`，那么就无法赋值。除非你使用联合类型，才能通过类型检查：
 
-  ```typescript
-  let a:number;
-  a = null			// 正确
-  /*
-  	1. 默认null和undefined是其他类型的子类型，可以赋值给其他类型
-  	2. 如果指定了`--strictNullChecks`标记，那么只能赋值给void或自身
-  */
+  ```tsx
+  const a: number | undefined | null = null
   ```
 
 * enum（枚举类型）
@@ -189,6 +190,7 @@ let a: string = '123'
   
   console.log(SEASON.SPR);					// 1
   
+  // 你还可以设置初始值
   enum SEASON {
     SPR=2,
     SUM,
@@ -198,6 +200,59 @@ let a: string = '123'
   
   console.log(SEASON.SPR, SEASON.AUT);		// 2 4
   
+  // 字符串枚举
+  enum Messag {
+      Success = '成功',
+      fail = '失败'
+  }
+  
+  Message.Success = '成功了'		// 报错，枚举类型定义后是不能修改的
+  
+  // 异构枚举，字符串和数字混合，不建议使用
+  enum Answer {
+      N,
+      Y = 'yes'
+  }
+  
+  /*
+  	1. 枚举类型的变量一般是大写
+  	2. 结果一般也用大写，用逗号隔开
+  	3. 可以自定义赋值，默认是0
+  */
+  
+  ```
+
+  > 对于角色判断的场景，可以使用枚举类型。
+
+  枚举类型分为常量枚举和计算枚举：
+
+  ```tsx
+  enum Demo {
+      // 常量枚举
+      a,
+      b = 1+3,
+      // 计算枚举
+      c = '123'.lenght
+  }
+  ```
+
+  常量枚举会在编译阶段就执行，而计算枚举会被保留到运行时计算。
+
+  当然，你也可以通过`const`来声明常量枚举：
+
+  ```tsx
+  const enum Demo {
+      A,
+      B
+  }
+  ```
+
+  常量枚举会减少运行时代码。
+
+  当然，枚举成员和枚举类型都可以作为类型：
+
+  ```tsx
+  // 枚举类型作为类型
   enum CHOOSE { WIFE = 2, MOTHER = 3 }
   
   function question(choose: CHOOSE): void {
@@ -206,15 +261,21 @@ let a: string = '123'
   
   question(CHOOSE.WIFE)						// 2
   
-  /*
-  	1. 枚举类型的变量一般是大写
-  	2. 结果一般也用大写，用逗号隔开
-  	3. 可以自定义赋值，默认是0
-  */
+  // 枚举成员作为类型
+  enum E { a=1 }
+  enum F { a=1 }
+  
+  const v1:E.a = 2
+  const v2:F.a = 2
+  console.log(v1 === v2)			// 报错
   ```
+
+  注意：不同枚举类型是不能进行比较的
 
 * never
 
+  never表示永远不会有返回值的类型，例如死循环和抛出异常
+  
   ```typescript
   function err(msg: string): never {
       throw new Error(msg)
@@ -225,6 +286,12 @@ let a: string = '123'
   	2. never类型是任何类型的子类型，可以赋值给任何类型。但是没有
   	类型是never的子类型或可以赋值给never类型（除了自身），即使是any类型
   */
+  ```
+  
+* symbol
+
+  ```js
+  const s1: symbol = Symbol()
   ```
 
 如果省略类型声明，TypeScript会从代码中自动推断出来。
@@ -378,7 +445,7 @@ function add(a: number, b?:number): number {
     return a
 }
 
-add(1)				// 可选参数
+add(1)				// 可选参数，可选参数必须在必选参数之后
 
 function add(a: number, b:number = 0): number {
   if(b) {
@@ -420,6 +487,38 @@ add()				// 匿名函数赋值给add变量，并且添加类型说明符
 const add: (n1: number, n2: number) = (n1: number, n2: number): number => n1 + n2
 
 add()				// 箭头函数赋值给add变量，并且添加类型说明符
+
+let compute = (x: number, y: number) => number		// 先定义
+compute = (a,b) => a+b								// 后实现，参数名可以不一样
+```
+
+通过接口以及类型别名同样可以定义函数类型。
+
+```tsx
+const add: (x: number, y: number) => number
+
+interface Add {
+    (x: number,y:number): number
+}
+
+type Add = (x: number, y: number) => number
+
+// 三者等价
+```
+
+当然ts还支持函数重载。
+
+```tsx
+function add(...rest: number[]): number			// 容易匹配的类型写在前面
+function add(...rest: string[]): string
+function add(...rest: any[]): any {
+    if(typeof rest[0] === 'string') {
+        return rest.join(' ')
+    }
+    if(typeof rest[0] === 'number') {
+        return rest.reduce((pre, cur) => pre + cur)
+    }
+}
 ```
 
 ## 面向对象
@@ -446,6 +545,12 @@ const a: Person = new Person('ugu')
 a.sayName()
 ```
 
+对于对象字面量，你可以这样定义：
+
+```js
+const obj: {x: number} = {x:1}
+```
+
 ### 抽象类
 
 抽象类做为其它派生类的基类使用，它们一般不能直接被实例化，不同于接口，抽象类可以包含成员的实现细节，`abstract`关键字是用于定义抽象类和在抽象类内部定义抽象方法。
@@ -466,8 +571,11 @@ abstract class Animal {
 如果希望对类中的属性和方法对外进行访问限制，此时需要借助访问修饰符。
 
 * public：公有修饰符，可以在类内或者类外使用public修饰的属性或者行为，默认修饰符
-* protected：受保护的修饰符，可以本类和子类中使用protected修饰的属性和行为
-* private：私有修饰符，只可以在类内使用private修饰的属性和行为
+* protected：受保护的修饰符，可以本类和子类中使用protected修饰的属性和行为，不能在实例中访问
+* private：私有修饰符，只可以在类内使用private修饰的属性和行为，类的实例和字类无法访问
+
+> * 构造函数也可以加上`private`，表示该类不能被实例化也不能被继承
+> * 构造函数也可以加上`protected`，表示该类只能作为基类被继承，不能被实例化
 
 ```typescript
 class Person {
@@ -557,6 +665,45 @@ interface Person {
 	1. 修饰的属性只能在声明的时候赋值，或者在构造函数中赋值
 	2. 只读修饰符还可以修饰接口
 */
+```
+
+通过`readonly`修饰的属性不能够被修改，并且定义的时候就要初始化。
+
+```tsx
+class Person { 
+    readonly name = 'ugu'
+
+    age: number
+    constructor(age: number) { 
+        this.age = age
+    }
+}
+
+const p = new Person(1)
+console.log(p.name)			// 'ugu'
+```
+
+除了类成员可以添加修饰符之外，构造函数的参数也可以添加修饰符，这样可以省略定义。
+
+```tsx
+class Person { 
+    constructor(public age: number) { 
+    }
+}
+
+const p = new Person(1)
+console.log(p.age)
+
+// 等价于
+class Person { 
+    public age: number
+    constructor(age: number) { 
+    	this.age = age
+    }
+}
+
+const p = new Person(1)
+console.log(p.age)
 ```
 
 ### static修饰符
@@ -712,6 +859,18 @@ let pt: Point = {
 
 console.log(pt)					// {x: 1, y: 1}
 
+// 或者使用类型断言，明确告诉编译器知道变量类型
+let pt = {
+    x: 1,
+    y: 1
+} as Point
+
+// 或者第二种方式类型断言,建议使用这种
+let point = <Point>{
+    x: 1,
+    y: 1
+}
+
 function fn({ x = 1, y = 1 }: Point) {
   console.log(x, y)
 }
@@ -785,7 +944,7 @@ interface Person {
   name: string;
   sayAge(): void;
 }
-// 实现类接口的关键字是implements
+// 实现类接口的关键字是implements，必须实现接口中定义的所有属性
 class Student implements Person {
   name: string;
   age: number;
@@ -801,7 +960,45 @@ class Student implements Person {
 
 const s: Student = new Student(12)
 s.sayAge();				// 12
+
+
+// 接口也可以进行继承
+interface Man {
+    run(): void
+}
+
+interface Woman {
+    cry(): void
+}
+    
+interface Person extends Man, Woman {}
+    
+class boy implements Person {
+    
+}
+    
+// 接口也可以继承类
+class Auto {
+    state = 1			// 可以通过this.state来访问
+}
+    
+interface AutoInterface extends Auto {}
 ```
+
+当然，接口中的属性也是可以通过`readonly`修饰符来限制属性的访问。
+
+```tsx
+interface Names {
+  [x: string]: string
+  [prop: number]: string
+}
+```
+
+表示`Names`接口既可以通过字符串进行索引，也可以通过数字进行索引。注意：第二个索引签名的返回值必须是第一个索引签名的子类型，因为`JavaScript`会做隐式类型转换。
+
+总之，类和接口的关系如下：
+
+![](./images/class_interface.png)
 
 ### 命名空间
 
@@ -869,14 +1066,48 @@ fn()
 
 ## 泛型
 
-泛型是允许同一个函数接受各种不同类型的参数的模板，使用泛型创建可重用组件比使用具体的数据类型要好，因为泛型保留了输入、输出它们的变量的类型。
+如果你想要一个函数同时接收多个参数，你可能会想到函数重载，联合类型以及any类型。
+
+而泛型是解决这类问题的好方法。泛型是指不预先确定的数据类型，具体的类型在使用的时候才能确定。
 
 ```typescript
-function demo<T>(a: T): T {
-  return a
+function log<T>(value: T): T {
+    return value
 }
 
-console.log(demo(123));					// 123
+// 这样定义的函数就保证输入和输出是同一种数据类型
+
+// 调用的时候在确定类型
+log<string[]>(['a'])
+
+// 或者使用ts的类型推断，省略前面的类型定义，这种方式比较推荐
+log(['a'])
+
+// 或者使用类型别名来定义泛型
+type Log = <T>(value: T) => T;
+const myLog: Log = log;
+    
+// 上面还可以通过接口还定义
+interface Log {
+    <T>(value: T): T
+}
+
+const myLog: Log = log;
+myLog(1)
+
+// 你可以将`<T>`提前来表示接口中的每个属性都是泛型
+interface Log<T> {
+    (value: T): T
+}
+
+// 当使用提前这种形式石，需要执行类型
+const myLog: Log<number> = log;
+myLog(1)
+
+// 或者在定义的时候定义初始类型
+interface Log<T = number> {
+    (value: T): T
+}
 
 // 泛型数组
 function demo<T>(a: T[]): T {			// 或者 a: Array<T>
@@ -885,18 +1116,34 @@ function demo<T>(a: T[]): T {			// 或者 a: Array<T>
 
 console.log(demo([1, 2, 3]));			// 1
 
-// 接口泛型
-interface someI<T>{
-    (a : T) : T
+// 泛型类
+class Log<T> {
+    // 泛型不能约束static类型
+    run(value: T) {
+        return value
+    }
 }
 
-let b : someI<number>
-/*
-	1. b是一个(a: number) => number 的匿名函数
-*/
+const l = new Log<number>()			// 不指定`number`，
+1.run(1)							// 则可以传入任意值
+
+// 当然，你还可以进行泛型约束
+interface Length {
+    length: number
+}
+
+function log<T extends Length>(value: T): T {
+    console.log(value.lenght)
+}
+
+log([1])			// 传入的值必须有length属性，且length属性值必须是数字
 ```
 
-泛型的作用就是在调用的时候，再限定某些值的类型
+泛型的优点：
+
+* 函数和类可以轻松地支持多种类型，增强程序的扩展性
+* 不必写多条函数重载，冗长的联合类型声明，增强代码可读性
+* 灵活控制类型之间的约束
 
 ## 声明文件
 
@@ -920,6 +1167,12 @@ npm i @types/jquery -D
 
 如果第三方库没有提供声明文件时，就需要自己写声明文件了。具体点击[这里](<https://ts.xcatliu.com/basics/declaration-files>)。
 
+如何编写声明文件呢？
+
+* 全局类库
+* 模块类库
+* umd库
+
 ## 内置对象
 
 对于ES、BOM和DOM的内置对象，TS已经包含，但是Node不是内置对象的一部分，所以如果你用TS写Node.js，需要下载第三方声明文件。
@@ -927,3 +1180,221 @@ npm i @types/jquery -D
 ```bash
 npm i @types/node -D
 ```
+
+## 类型检查机制
+
+所谓类型检查机制，是指ts编译器在做类型检查时，所秉承的一些原则，以及表现出的一些行为。
+
+作用：辅助开发，提高开发效率。
+
+### 类型推断
+
+不需要指定变量的类型（函数的返回值类型），ts可以根据某些规则自动地为其推断出一个类型。
+
+**基础类型推断**
+
+```typescript
+const a			// 推断为any
+const a = 1			// 推断为number
+const a = []			// 推断为any[]
+const a	= [1]		// 推断为number[]
+
+
+// 函数
+const a = (x = 1) => x+1			// x参数推断为number，返回值推断为number
+```
+
+**最佳通用类型推断**
+
+```typescript
+const a = [1, null]			// 被推断为number和null的联合类型
+// 但是如果你关闭了`strictNullChecks`，那么null和number就可以兼容，推断为number[]
+```
+
+**上下文类型推断**
+
+上面两种类型推断都是从右向左推断，而上下文类型推断是从左到右。
+
+```typescript
+window.onkeydown = e => {		// e会根据左边绑定的事件推断为键盘事件对象类型
+    
+}
+```
+
+一般来说，开发者是对代码更加熟悉的，所以你可以覆盖ts编译器的类型推断，也就是说你可以显式地类型声明。
+
+```typescript
+interface Foo {
+    bar: number
+}
+
+let foo:Foo = {
+    bar: 1
+}
+console.log(foo.bar)
+```
+
+### 类型兼容性
+
+当一个类型Y可以被赋值给另一个类型X时，就可以说类型X兼容类型Y。其中X称为目标类型，Y称为原类型。
+
+```js
+const s: string = '1'
+s = null					// 正确
+
+// 接口兼容性
+interface X {
+    a: any,
+    b: any
+}
+
+interface Y {
+    a: any,
+    b: any,
+    c: any
+}
+
+let x: X = {a:1,b:2}
+let y: Y = {a:1,b:2,c:3}
+x = y						// 正确赋值
+
+// 函数兼容性
+/*
+	条件：
+	对于函数参数来说
+	如果参数固定，原类型参数必须大于目标类型参数
+	如果参数不固定，那么，固定参数是可以兼容可选参数和剩余参数
+	而可选参数是不兼容固定参数和剩余参数的。当然你可以关闭`strictFunctionTypes`来开启兼容
+	
+	对于参数类型来说
+	参数类型必须匹配
+	
+	对于返回值类型来说
+	参数类型返回值必须相同，或者是其子类型
+*/
+
+// 枚举兼容性
+enum Color {Red,Yellow}
+const c: Color.Red = 2			// 数字兼容是完全兼容枚举类型，而枚举类型之间是互相不兼容的
+
+// 类兼容性
+// 类兼容性会比较两个类的成员，注意：对于static属性和构造函数是不参与比较的
+
+// 泛型兼容性
+
+```
+
+总结：
+
+* 结构之间进行比较，成员少的兼容成员多的
+* 函数之间兼容，参数多的兼容参数少的
+
+### 类型保护
+
+TypeScript能够在特定的区块中保证变量属于某种确定的类型。这样你就可以在此区块中放心地引用此类型的属性，或者调用此类型的方法。
+
+* `instanceof`
+* `in`
+* `typeof`
+
+当然，你也可以自定义类型保护函数。
+
+## ts-node
+
+ts-node可以直接运行ts文件。
+
+## 模块化
+
+ts支持commonjs和es6模块化等主流模块化规范，可以通过配置文件来修改。
+
+注意：es6和commonjs模块化规范不要混用，否则会加default。
+
+## 高级类型
+
+### 交叉类型
+
+```typescript
+interface Dog {
+    run() : void
+}
+
+interface Cat {
+    jump(): void
+}
+ // 取所有类型的并集
+ const pet: Dog & Cat {
+     run() {}
+     jump() {}
+ }
+```
+
+### 联合类型
+
+表示声明的类型不确定，可以是其中一个。
+
+```typescript
+const a: 'a'|'b'			// a变量只能是字符串a或者字符串b
+const a: number | string		
+```
+
+### 索引类型
+
+### 映射类型
+
+### 条件类型
+
+## 声明合并
+
+```typescript
+interface A {
+    a: number
+}
+interface A {
+    b: number
+}
+
+const a: A = {
+    a: 1,
+    b: 1
+}
+```
+
+如果有函数则合并成函数重载。
+
+命名空间之间也可以声明合并。除了和自身合并之外，命名空间还可以和枚举，类进行合并。
+
+## ts-loader
+
+ts-loader底层还是调用tsc编译器来进行编译，所以它和tsc共用一个配置文件。当然ts-loader还支持自己的配置，可以在文档中查看。
+
+有时我们需要为了打包速度会把`ts-loader`的类型检查关闭后进行编译，这时我们就需要使用第三方插件fork-ts-checker-webpack-plugin将类型检查放到独立的进程来进行类型检查
+
+还有一个loader用来编译ts文件——awesome-typescript-loader，它们之间的区别：
+
+* 更适合和babel集成，使用babel的转义和缓存
+* 不需要安装额外的插件（自身就实现了这个插件），就可以把类型检查放在独立进程中进行。
+
+> 建议使用ts-loader，第二种有类型检查遗漏。
+
+## babel
+
+可能你会想到为什么有tsc了，还有使用babel呢？因为babel有丰富的插件。
+
+在babel7之前，你可能需要使用tsc将ts编译成js，然后再将编译后的js通过babel再编译一次。很是麻烦。但是babel7之后，你可以直接通过`babel`来编译typescript，你只需要通过`preset-typescript`插件即可。
+
+注意：babel是没有类型检查的，要安装typescript来进行代码检查，并且开启tsconfig的`noemit`表示typescript仅仅用来检查类型。此时你可以配置两个script，一个是开发环境：tsc --watch用来在开发环境检查类型。在生产环境通过babel7来编译代码。
+
+## 代码lint
+
+tslint因为架构问题已经被官方放弃，从而转向eslint。
+
+## ts in js
+
+* 配置文件allowjs
+* vscode中安装对应的types包也会得到代码提示
+* 在js中也可以获得自动提示和静态检查。只要在vscode的setting中勾上check js即可
+
+## React
+
+你可以自己搭建一个`react`，`webpack`以及`ts`的工程化项目。
+

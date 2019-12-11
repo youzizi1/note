@@ -362,27 +362,31 @@ app.use(router.routes())
 
 关于命名路由，动态路由，嵌套路由，路由前缀的时候看koa-router官网。
 
-### 权限控制
+### 路由鉴权
 
-常见的权限控制有：
+常见的路由鉴权有：
 
-* 基于cookie
+* 基于cookie/session
 * 基于JWT
+* 基于oauth
 
 ```js
 // 单个路由权限控制
 const auth = async (ctx, next) => {
-    if(ctx.url === '/users') {
-        ctx.throw(401)				// 401表示未鉴权
+    if(!ctx.session.userinfo) {
+        ctx.body = {
+            ok: 0,
+            message: '用户未登录'
+        }
+    }else {
+        await next()
     }
-    await next()
 }
 
 router.get('/users', auth, async ctx => {		
     // ...
 })
 
-// 整个视图需要权限控制
 ```
 
 ## MVC
@@ -1057,7 +1061,7 @@ module.exports = {
 
 ## 参数校验
 
-可以通过第三方中间件koa-parameter来进行请求参数校验。
+有的时候，我们需要对客户端传递过来的参数进行校验，你可以通过`koa-bouncer`或者`koa-parameter`来进行参数校验。
 
 ## 源码介绍
 
