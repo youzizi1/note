@@ -119,7 +119,26 @@ db.class_one.insert({name: 'ugu'})
 db.class_one.insert({name: 'ugu'})
 ```
 
-每当插入一条新文档的时候，MongoDB会自动为此文档添加一个唯一的ID属性，用来标识这个文档。当然，这个文档也可以手动指定。
+每当插入一条新文档的时候，`MongoDB`会自动为此文档添加一个唯一的ID属性作为主键来标识这个文档。当然，这个主键也可以手动指定。
+
+**insertOne**
+
+```
+db.class_one.insertOne(<document>, {
+	writeConcern: <document>
+})
+```
+
+其中`writeConcern`定义了本次文档创建操作的安全写级别。安全写用来判断依次数据库写入操作是否成功，级别越高，丢失数据的风险就越低，然而写入操作的延迟就可能更高。如果不提供`writeConcern`文档，那么就使用默认的安全写级别。
+
+**insertMany**
+
+```
+db.class_one.insert([
+    {name: 'ugu1'},
+    {name: 'ugu2'}
+])
+```
 
 #### save
 
@@ -272,7 +291,7 @@ db.collection_name.find(query, projection)
 
 其中：
 
-* query：变送hi查询条件
+* query：指定查询条件
 * projection：指定返回的字段
 
 注意：默认情况下`_id`字段会自动一直返回，除非你手动将`_id`字段设置为0或false。
@@ -506,12 +525,20 @@ result.forEach(elem => printjson(elem))
 
 ## ObjectId
 
-MySQL这些关系型数据库，主键都是设置成自增的。但是在但在分布式环境下，这种方法会产生冲突。为此，MongoDB采用了一个称之为`ObjectId`的类型来做主键。`ObjectId`是一个12字节的`BSON`类型字符串。按照字节顺序，分别代表：
+`Mongodb`中的文档主键具有如下特性：
+
+* 唯一性
+* 支持所有类型（数组除外）
+* 复合主键
+
+当然你也可以不指定主键，`Mongodb`会自动生成`ObjectId`对象主键，它是一个12字节的`BSON`类型字符串。按照字节顺序，分别代表：
 
 - 4字节：UNIX时间戳
 - 3字节：表示运行MongoDB的机器
 - 2字节：表示生成此`_id`的进程
 - 3字节：由一个随机数开始的计数器生成的值
+
+> `MySQL`这些关系型数据库的主键都是设置成自增的。但是在但在分布式环境下，这种方法会产生冲突。
 
 ## 运维
 
