@@ -2140,6 +2140,20 @@ ReactDOM.render(
 
 ### withRouter
 
+### 路由懒加载
+
+第一种通过`@babel/plugin-syntax-dynamic-import`。
+
+```
+// .babelrc
+{
+  "presets": ["@babel/preset-react"],
+  "plugins": ["@babel/plugin-syntax-dynamic-import"]
+}
+```
+
+另一种通过`react-loadable`。
+
 ## 数据管理
 
 ### 三大原则
