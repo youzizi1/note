@@ -300,9 +300,10 @@ console.log('('+str.padEnd(5)+')')
 
 ```js
 function replace(str) {
-  const reg = /\$\{([^}]+)\}/g
+  const reg = /\$\{(\w)+\}/
 
   return str.replace(reg, (matched, key) => {
+    console.log(key)			// 'name', 'age'
     return eval(key)
   })
 }
@@ -563,6 +564,7 @@ foo(1, 2, 3)
 
 const set = new Set([1,2,3,1])
 const arr= Array.from(set)			// [1,2,3]
+const arr = [...set]				// [1,2,3]
 
 const map = new Map([[1,2],[3,4]])
 const arr= Array.from(map)			// [[1,2],[3,4]]
@@ -634,18 +636,23 @@ console.log(arr.includes(1))		// true
 #### reduce
 
 ```js
-const arr = [1, 2, 3]
+const arr = [1, 2, 3, 4];
 
-Array.prototype.reduce1 = function (reducer, initValue) {
-  for (let i = 0; i < this.length; i++) {
-    initValue = reducer(initValue, this[i])
+Array.prototype.myReduce = function(fn, initValue) {
+  const { length } = this;
+
+  for (let i = 0; i < length; i++) {
+    initValue = fn(initValue, this[i]);
   }
-  return initValue
-}
-const result = arr.reduce1((total, num) => {
-  return total + num
-}, 0)
-console.log(result)				// 6
+
+  return initValue;
+};
+
+const result = arr.myReduce((prev, next) => {
+  return prev + next;
+}, 0);
+
+console.log(result);
 ```
 
 #### filter的原理
@@ -666,6 +673,54 @@ Array.prototype.filter1 = function(fn){
 const arr1 = arr.filter1(function(item){
   return item > 2
 })
+```
+
+#### map的原理
+
+```js
+Array.prototype.myMap = function(fn) {
+  const arr = [];
+
+  this.forEach(item => arr.push(fn(item)))
+
+  return arr
+};
+```
+
+#### some的原理
+
+```js
+Array.prototype.mySome = function(fn) {
+  if (typeof fn !== "function") {
+    throw new TypeError("arguments is not a function");
+  }
+
+  for (let i = 0, length = this.length; i < length; i++) {
+    if(fn(this[i])) {
+      return true
+    }
+  }
+
+  return false
+};
+```
+
+#### every的原理
+
+```js
+Array.prototype.myEvery = function(fn) {
+  if (typeof fn !== "function") {
+    throw new TypeError("arguments is not a function");
+  }
+
+  for (let i = 0, length = this.length; i < length; i++) {
+    if(!fn(this[i])) {
+      return false
+    }
+  }
+
+  return true
+};
 ```
 
 ## Symbol属性
@@ -1064,13 +1119,13 @@ console.log(a)			// 'hi, ugu'
 * Array.prototype.slice
 * JSON.parse(JSON.stringify())
 
-前四种都是浅拷贝，最后一种是深拷贝。但是最后一种有一个缺点：不支持函数。
+前四种都是浅拷贝，最后一种是深拷贝。但是最后一种有一个缺点：不支持函数，会被自动删除。
 
 下面是自定义实现深度克隆。
 
 ```javascript
 function checkType(data){
-  return Object.prototype.toString().call(data).slice(8,-1)
+  return Object.prototype.toString.call(data).slice(8,-1)
 }
 function deepClone(obj){
   let result,
