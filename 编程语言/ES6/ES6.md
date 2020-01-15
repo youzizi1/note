@@ -14,7 +14,7 @@ ES6之前，JavaScript只有全局作用域和函数作用域。
 
 ```js
 for(var i = 1; i<=3; i++) {
-    setTimeout(() => {
+    setTimeout(() => {			// 异步，函数作用域在定义时确定，向上层找
        console.log(i) 
     },0)
 }
@@ -22,6 +22,18 @@ for(var i = 1; i<=3; i++) {
 /*
 	输出三次4,
 	本质上是没有块级作用域造成。
+*/
+
+for(let i = 1; i<=3; i++) {
+    setTimeout(() => {			// 异步，函数作用域在定义时确定，向上层找
+       console.log(i) 
+    },0)
+}
+
+/*
+	1
+	2
+	3
 */
 ```
 

@@ -452,6 +452,8 @@
 * `line-height`属性的百分比是相对于当前元素的`font-size`属性来计算
 * `vertical-align`属性的百分比是相对于当前元素的`line-height`来计算
 
+>  当`margin`/`padding`取形式为`百分比`的值时，无论是`left`/`right`，还是`top/bottom`，都是以父元素的`width`为参照物的。
+
 ```html
 <style>
   div{

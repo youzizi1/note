@@ -89,6 +89,10 @@ axios.interceptors.response.use(res=>{
   $('#model').hide()    	// 隐藏loading
   return res
 },err=>{
+  if (!window.navigator.onLine) {
+      // 断网处理
+      return 
+  } 
   // 统一错误处理，而不是每次都catch错误
   return Promise.reject(err)
 })
