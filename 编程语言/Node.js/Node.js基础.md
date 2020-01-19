@@ -149,13 +149,13 @@ function f() {
 
 Node中的`Event Loop`是基于`libuv`实现的，`libuv`是`node`的跨平台抽象层，它使用异步，事件驱动的编程方式，核心是提供`I/O`的事件循环和异步回调。
 
-和浏览器的事件环不同，浏览器只有宏任务和微任务两个队列，而在Node中，有如下六个队列：
+和浏览器的事件环不同，浏览器只有宏任务和微任务两个队列，而在Node中，有如下六个队列，它们会按照顺序反复运行。每当进入某一个阶段的时候，都会从对应的回调队列中取出函数去执行。当队列为空或者执行的回调函数数量到达系统设定的阈值，就会进入下一个阶段：
 
-- `timers`: 执行`setTimeout`和`setInterval`中到期的`callback`
-- `pending callback`: 上一轮循环中少数的`callback`会放在这一阶段执行
+- `timers`: 执行`setTimeout`和`setInterval`中到期的`callback`，并且是由poll阶段控制
+- `pending callback`: 会处理一些上一轮轮询中的少数未执行的`I/O`回调
 - `idle, prepare`: 仅在内部使用
-- `poll`: 最重要的阶段，执行`pending callback`，在适当的情况下回阻塞在这个阶段
-- `check`: 执行`setImmediate`(`setImmediate()`是将事件插入到事件队列尾部，主线程和事件队列的函数执行完成之后立即执行`setImmediate`指定的回调函数)的`callback`
+- `poll`: 最重要的阶段，会做两件事：回到timer阶段执行回调和执行`I/O`回调
+- `check`: 执行`setImmediate`
 - `close callbacks`: 执行`close`事件的`callback`，例如`socket.on('close'[,fn])`或者`http.server.on('close, fn)`
 
 执行代码时，会讲任务分配给相应的队列，默认会从上到下执行这些队列。

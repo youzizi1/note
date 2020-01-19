@@ -275,7 +275,7 @@ console.log(OtherInfo.Name)
 console.log(OtherInfo.Age)
 ```
 
-相较于之前的枚举类型，常量枚举在编译阶段会省略声明，可以提升新跟那个。当然你也可以通过` --preserveConstEnums `保留编译后的声明。
+相较于之前的枚举类型，常量枚举在编译阶段会省略声明，可以提升性能。当然你也可以通过` --preserveConstEnums `保留编译后的声明。
 
 #### 枚举成员类型
 
@@ -443,7 +443,7 @@ function  CalculateAreas(config: Config): { area: number} {
   return {area: square};
 }
 // 类型断言
-let mySquare = CalculateAreas({ widdth: 5 } as Config);
+let mySquare = CalculateAreas({ width: 5 } as Config);
 console.log(mySquare)
 ```
 
@@ -567,7 +567,7 @@ c.run()				// Error
 
 **protected**
 
-被保护的成员只能在`Class`的内部和字类中被访问。
+被保护的成员只能在`Class`的内部和子类中被访问。
 
 ```typescript
 class Car {

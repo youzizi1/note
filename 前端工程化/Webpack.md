@@ -992,6 +992,10 @@ console.log(1 + 1);
 console.log(3)
 ```
 
+Tree-Shaking 的针对性很强，它更适合用来处理模块级别的冗余代码。至于粒度更细的冗余代码的去除，往往会被整合进 JS 或 CSS 的压缩或分离过程中。例如：脚本中注释和`console`语句可以通过`uglifyjsPlugin`来自动化删除。
+
+> `webpack4`内置了`uglify-webpack-plugin`，你可以直接通过`optimization.minimize`来配置。
+
 ### 代码分割
 
 通过`SplitChunksPlugin`来实现JavaScript代码分割。
@@ -1535,7 +1539,6 @@ fs.writeFileSync("./bundle.js", ret);
 * download-git-repo：实现从github或gitlab上下载代码
 * Oclif：基于Node.js开发CLI工具框架
 * yargs：处理命令行参数
-* 
 
 ## 抽象语法树
 

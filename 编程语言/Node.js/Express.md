@@ -336,7 +336,37 @@ app.use('/user',user)
 
 当然，我们也可以直接使用`bodyParser`模块，它帮我们做了这一切。它会将获取的数据解析后并且挂载在`req.body`上。
 
-## 原理
+## 中间件原理
+
+中间件执行流程本质上异步串行流程控制，也就是说让异步任务按顺序执行。
+
+```js
+const tasks = [
+    function a() {
+        ...
+        next()
+    },
+    
+    function b() {
+        ...
+        next()
+    }
+    ...
+]
+
+function next(err, cb) {
+    if(err) throw err
+    const currentTask = tasks.shift()
+    if(currentTask) currentTask(cb)
+    next()
+}
+
+next()
+```
+
+异步串行控制方案除了上面的这种以外，还可以用`promise`的`then`链、`async/await`、`yeild`、社区工具等； 
+
+## 框架实现
 
 ```js
 const http = require("http");

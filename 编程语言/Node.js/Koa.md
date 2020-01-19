@@ -988,8 +988,6 @@ client.get('name', function(err, value) {
 
 Redis常见的应用场景就是持久化session。
 
-
-
 ```js
 const Koa = require('koa')
 const app = new Koa()
@@ -1063,7 +1061,42 @@ module.exports = {
 
 有的时候，我们需要对客户端传递过来的参数进行校验，你可以通过`koa-bouncer`或者`koa-parameter`来进行参数校验。
 
-## 源码介绍
+## 中间件原理
+
+```js
+const middlewares = [
+  async function m1(ctx, next) {
+    console.log("1 enter");
+    await next();		// await m2()
+    console.log("1 leave");
+  },
+  async function m2(ctx, next) {
+    console.log("2 enter");
+    await next();
+    console.log("2 leave");
+  }
+];
+
+function compose(middlewares) {
+  return function(ctx, next) {
+    function dispatch(i) {
+      const middleware = middlewares[i];
+      if(!middleware) return Promise.resolve()
+      return Promise.resolve(
+        middleware(ctx, function next() {
+          return dispatch(i + 1);
+        })
+      );
+    }
+
+    return dispatch(0);
+  };
+}
+
+compose(middlewares)(null, null);
+```
+
+## 源码实现
 
 ```js
 // index.js
@@ -1174,6 +1207,3 @@ const response = {
 
 module.exports = response;
 ```
-
-
-

@@ -757,7 +757,7 @@ console.log(s)			// Symbol()
 const s = Symbol()
 const obj = {}
 
-obj[s] = 'ugu'
+obj[s] = 'ugu'				// 保证s在obj中是唯一的
 
 console.log(obj[s])			// 'ugu'
 ```
@@ -846,7 +846,7 @@ const newArr = [1, ...arr]
 
 ### 生成器（generator）
 
-有了生成器就不用手动模拟迭代器，直接使用生成器生成迭代器即可。
+生成器最大的特点就是可以控制函数的执行，有了生成器就不用手动模拟迭代器，直接使用生成器生成迭代器即可。
 
 ```js
 function* fn() {
@@ -898,6 +898,19 @@ for(let item of obj) {
 	12
 */
 ```
+
+## async/await
+
+`await`本质上是`co`+`generator`的语法糖。
+
+```js
+async function fn() {
+    await fetchApi()		
+    await fetchApi()
+}
+```
+
+如果`await`不是后跟`Promise`，就会包装成`Promise.resolve(返回值)`，然后回去执行函数外的同步代码。
 
 ## 类
 
@@ -1160,5 +1173,101 @@ function deepClone(obj){
     }
   }
   return result
+}
+```
+
+## call/apply/bind实现
+
+原理：
+
+* 不传入第一个参数，上下文默认为`window`
+* 如果传入第一个参数，那么`this`指向这个对象
+
+```js
+// call
+Function.prototype.myCall = function(ctx) {
+    if(typeof this !== 'function') {
+        throw new Error('TypeError')
+    }
+    
+    ctx = ctx || window
+    ctx.fn = this
+    const args = [...arguments].slice(1)
+    const result = ctx.fn(...args)
+    delete ctx.fn
+    return result
+}
+
+// apply
+Function.prototype.myApply = function(ctx) {
+    if(typeof this !== 'function') {
+        throw new Error('TypeError')
+    }
+    
+    ctx = ctx || window
+    ctx.fn = this
+    let result
+    if(arguments[1]) {
+        result = ctx.fn(...arguments[1])
+    }else {
+        result = ctx.fn()
+    }
+    delete ctx.fn
+    return result
+}
+
+// bind
+Function.prototype.myBind = function(result) {
+    if(typeof this !== 'function') {
+        throw new TypeError('Error')
+    }
+    
+    const _this = this
+    const args = [...arguments].slice(1)
+	
+    return function F() {
+        if(this instanceof F) {
+            return new _this(...args, ...arguments)
+        }
+        return _this.apply(ctx, args.ctx(...arguments))
+    }
+}
+```
+
+## new
+
+* 新生成一个对象
+* 链接到原型
+* 绑定this
+* 返回新对象
+
+```js
+function create() {
+    let obj = {}
+    let Con = [].shift.call(arguments)
+	
+    obj.__proto__ = Con.prototype
+    let result = Con.apply(obj, arguments)
+    return result instanceof Object ? result : obj
+}
+```
+
+## instanceof
+
+```js
+function myInstanceof(left, right) {
+    let prototype = right.prototype
+    
+    left = left.__proto__
+    
+    while(true) {
+        if(left === null || left === undefined) {
+            return false
+        }
+        if(prototype === left) {
+            return true
+        }
+        left = left.__proto__
+    }
 }
 ```

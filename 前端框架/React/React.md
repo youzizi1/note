@@ -4,6 +4,24 @@
 
 而在`Fiber`架构中，会将一个更新过程进行多个分片操作，这样就很小的分片更新操作就可能被优先级高的任务打断，从而实现异步更新。
 
+根据React Fiber的设计，一个组件的渲染被分为两个阶段：第一个阶段（也叫做render阶段）是可以被React打断的，一旦被打断，这阶段所做的事情将会被废弃，当处理好优先级更高的任务后，再重新渲染这个组件，所以这个阶段可能会多次执行；第二个阶段叫做commit阶段，一旦开始就不能中断，也就是说这个阶段会一直持续到渲染结束。
+
+开启异步渲染，虽然获得了更好的感知性能，但是第一阶段的生命周期函数可能会被执行多次，所以不得不废弃一些render阶段之前回调函数，包括这些：
+
+* componentWillReceiveProps
+* shouldComponentUpdate
+* componentWillUpdate
+* componentWillMount
+* render
+
+那么在第一阶段就只有下面生命周期函数了：
+
+* 构造函数
+* getDerivedStateFromProps(纯函数)
+* shouldComponentUpdate(纯函数)
+
+所以，你不应该再第一阶段生命周期函数中执行有副作用的代码，例如不要在componentWillMount中发送请求，而是在componentDidUpdate中发送请求。
+
 ## 脚手架
 
 通过`create-react-app`脚手架搭建React项目
@@ -63,6 +81,8 @@ class Demo extends Component {
         }
         
         this.sayMsg = this.sayMsg.bind(this)
+        // this.onSplit = ::this.onSplit
+        // 上面这种bind operator并不是稳定的标准写法，但是避免这样写
     }
     
     sayMsg() {
@@ -137,7 +157,7 @@ class Demo extends Component {
 }
 ```
 
-注意：这种方式会有一个问题，就是每次渲染`Demo`组件都会创建不同的回调函数。在大多数情况下，着没什么问题。但是如果该回调函数作为`prop`传入子组件，就会导致子组件重新渲染。所以建议使用`public class field`语法。
+注意：这种方式会有一个问题，就是每次渲染`Demo`组件都会创建不同的回调函数。在大多数情况下，着没什么问题。但是如果该回调函数作为`prop`传入子组件，就会导致子组件重新渲染，并且无法通过`shouldComponentUpdate`对`props`的检查来避免重复渲染。所以建议使用`public class field`语法，避免使用这种内联函数。
 
 > 在事件中阻止默认行为，必须使用`preventDefault`，不能使用`return false`。
 
@@ -469,6 +489,42 @@ ReactDOM.render(<TodoApp />, document.getElementById("root"));
 
 一般来说，我们会在构造函数中初始化`state`。
 
+```js
+class Todo extends React.component {
+    constructor() {
+        super(...props)
+		this.state = {
+            name: ''
+        }
+    }
+}
+```
+
+或者不使用`constructor`：
+
+```js
+class Todo extends React.component {
+    state = {
+        name: ''
+    }
+    
+    constructor() {
+        super(...props)
+    }
+}
+```
+
+我们知道state和props都会触发state的重新渲染，如果组件需要一些不让组件重新渲染的静态数据，可以将这些数据定义在成员变量中。
+
+```jsx
+class Todo extends React.component {
+    title = '标题'
+	render() {
+        return <div>{this.title}</div>
+    }
+}
+```
+
 ### 操作state
 
 `React`禁止直接修改`state`，而是通过`setState`来操作。
@@ -539,7 +595,19 @@ ReactDOM.render(<TodoApp />, document.querySelector("#app"))
 
 ### state更新
 
-处于对性能考虑，`React`可能会把多个`setState()`调用合并成一个调用，异步进行更新。如果你想要依赖上一个状态，请使用`setState`的函数用法。
+处于对性能考虑，`React`可能会把多个`setState()`调用合并成一个调用，异步进行更新。对应在`api`的使用上就是`setState`的第二个回调函数被触发，表明此时`React`一句处理完了任务列表。
+
+```jsx
+this.setState({count: 1}, () => {
+    console.log(this.state.count)		// 这里就是1
+})
+```
+
+如果你想要依赖上一个状态，请使用`setState`的函数用法。
+
+### setState异步和同步
+
+前面我们知道setState是异步进行更新，是不是总是异步的？当然不是，如果是在`setTimeout`或者原生绑定事件中，那么就是同步的，因为脱离了`React`的控制，不知道如何进行`Batch Update`，此时就是同步的。当然，并不建议这样做，因为setState异步是为了进行性能优化。
 
 ## 生命周期
 
@@ -618,6 +686,20 @@ ReactDOM.render(<TodoApp />, document.querySelector("#app"))
 **`getDerivedStateFromProps`**
 
 在组件创建时或者更新时的`render`方法之前调用，它应该返回一个对象来更新状态，或者返回`null`来不更新内容。
+
+```js
+static getDerivedStateFromProps(nextProps, prevState) {
+    // ...
+}
+```
+
+**`getDerivedStateFromError`**
+
+如果异常发生在第一阶段，React会调用这个生命周期函数。
+
+**`componentDidCatch`**
+
+如果异常发生在第二阶段，React会调用这个生命周期函数。
 
 **`getSnapshotBeforeUpdate`**
 
@@ -1149,6 +1231,18 @@ ReactDOM.render(<App />, document.getElementById("root"));
 
 #### 总结
 
+高阶组件不要乱用，不仅仅是因为会出现嵌套地狱，而是高阶组件不得不处理`displayName`，来`debug`渲染出错的组件。
+
+```js
+const withExample = Component => {
+    const NewComponent = props => {
+        return <Component {...props} />
+    }
+    
+    NewComponent.displayName = `withExample(${Component.displayName || Component.name || 'Component'})`
+}
+```
+
 复用组件逻辑从最初的`mixins`，再到`HOC`，以及现在`hooks`。
 
 * `mixins`：组件耦合
@@ -1259,6 +1353,8 @@ ReactDOM.render(<App />, document.getElementById("root"));
 ```
 
 ### Memo
+
+我们在做组件拆分时，尽量会将子组件拆分成无状态组件，这样就可以将子组件写成函数组件，削去生命周期运行消耗。但是函数组件还是会随着父组件传递的`props`改变而重新渲染，也就是说函数式组件无法利用`shouldComponentUpdate`，所以为了提升性能，你需要写成`pureComponent`的形式来自动利用`shouldComponentUpdate`，尽管会有生命周期运行消耗。但是，现在出现了`memo`来解决函数组件无法利用`shouldComponentUpdate`。
 
 `Memo`用来解决`React`运行时效率问题。
 
@@ -1591,6 +1687,8 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 当点击按钮时，传递的`count`发生变化，`Foo`组件消费的`count`数据也会随之变化。
 
+`Context`类似于`Vue`的`Event Bus`，一个典型用例就是实现样式主题，由顶层的提供者确定一个主题，下面样式就可以直接使用对应主题里面的样式。当需要切换样式时，只需要修改提供者就行，其他组件不用修改。
+
 > `Context`可能会让组件复用性变差，谨慎使用。
 
 `ContextType`可以简化`Context`的使用。
@@ -1723,6 +1821,53 @@ console.log(ref.current)			// ref.current就是button元素
 ```
 
 注意：`render props`和`pureComponent`一起使用时会抵消后者的优势，因为浅比较`props`的时候总会得到`false`。
+
+`render props`很大程度上能替代`HOC`，两者区别如下：
+
+* `render props`：类似于控制反转`loc`，父组件传入`props`，渲染权交由子组件
+* `HOC`：控制权在新生成的组件
+
+## Suspense
+
+当我们在componentDidMount中发送请求获取数据时，此时会渲染两次，第一次state中没有数据，你可能会给一个loading的提示；第二次当数据获取到后，通过setState修改state数据，然后将组件重新渲染出来。这是因为渲染过程是同步，不可能让React等待这个组件调用请求返回数据之后再渲染。
+
+这种方式有如下缺点：
+
+* 代码啰嗦
+* 两次渲染
+* 无法使用函数组件
+
+而Suspense很好的解决这个问题：
+
+```jsx
+import React, {Suspense} from 'react';
+ 
+import {unstable_createResource as createResource} from 'react-cache';
+ 
+const getName = () => new Promise((resolve) => {
+  setTimeout(() => {
+    resolve('Morgan');
+  }, 1000);
+})
+ 
+const resource = createResource(getName);
+ 
+const Greeting = () => {
+  return <div>hello {resource.read()}</div>
+};
+ 
+const SuspenseDemo = () => {
+  return (
+    <Suspense fallback={<div>loading...</div>} >
+      <Greeting />
+    </Suspense>
+  );
+};
+```
+
+这样就很好地解决了异步请求带来的副作用问题，之前你可能需要再redux中使用中间件来操作。
+
+> 目前Suspense还不支持服务器端渲染。
 
 ## 动画
 
@@ -2044,7 +2189,14 @@ ReactDOM.render(<App />, document.getElementById("root"));
 
 注意：使用图片要通过import来引入。
 
+> `style-jsx`也是`css in js`的另一种解决方案。
+
 ## 路由
+
+要实现SPA，一个最要紧的就是路由，它需要做两件事：
+
+* 把url映射成对应的组件
+* 页面之间切换只需局部更新
 
 react-router-dom是react的路由解决方案，之前的版本是react-router。
 
@@ -2155,6 +2307,8 @@ ReactDOM.render(
 另一种通过`react-loadable`。
 
 ## 数据管理
+
+当你的数据需要多组件渲染以及当组件被卸载后重新挂载之前的状态需要保留，此时就需要使用状态管理。
 
 ### 三大原则
 
@@ -2575,6 +2729,7 @@ export default store;
 #### 其它中间件
 
 * redux-logger：记录redux日志信息
+* redux-observable：异步操作还可以使用rxjs
 
 ### react-redux
 
@@ -2906,7 +3061,7 @@ export default store;
 
 ### pureComponent
 
-`pureComponent`内置了`shouldComponentUpdate`的实现，采用了浅比较。
+`pureComponent`内置了`shouldComponentUpdate`的实现，采用了浅比较，也就是说两次渲染传入的某个`props`如果是同一个对象，但是对象中的某个属性值发生改变，`pureComponent`无法捕获。
 
 ```jsx
 
@@ -3027,6 +3182,7 @@ import React from 'react'
 import PropTypes from 'prop-types' 
 import {bindActionCreators} from './redux'
  
+// connect函数调用会产生一个HOC
 export const connect = (mapStateToProps=state=>state,mapDispatchToProps={})=> (WrapComponent)=>{    
     return class ConnectComponent extends React.Component {        
         static contextTypes = {            
@@ -3110,6 +3266,13 @@ Perf只是用来分析和监测页面性能，所以要用在开发环境。
 
 * 使用`immutable.js`
 * 使用`shouldComponentUpdate`
+* `react-redux`的只`connect`需要的组件
+
+## 服务器渲染
+
+难点是如何给组件获取和提供数据？这是要求你必须先获取好动态数据，因为服务器端没有生命周期componentDidMount供你调用ajax，除非你的应用没有动态内容。
+
+为了达到这一目的，必须把传给React组件的数据给保留住，随着HTML一起传递给浏览器，这个过程叫做脱水。在浏览器端，就直接拿这个脱水的数据来初始化React组件，这个过程称为注水。
 
 ## 生态
 
@@ -3117,6 +3280,7 @@ Perf只是用来分析和监测页面性能，所以要用在开发环境。
 * umi：react企业级脚手架工具
 * antd：阿里开源的React UI组件库
 * recharts：第三方React图表库
+* mobx：另一个优秀的状态管理框架
 
 ## Hooks
 
